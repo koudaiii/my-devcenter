@@ -1,0 +1,5 @@
+#!/bin/bash
+set -eu
+
+echo "az group delete --name $AZURE_RESOURCE_GROUP"
+az group delete --name $AZURE_RESOURCE_GROUP

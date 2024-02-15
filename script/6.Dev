@@ -1,0 +1,7 @@
+#!/bin/bash
+set -eu
+
+echo "Dev 環境の作成 on GitHub Environments"
+echo "- [ ] create env on GitHub Environments from https://learn.microsoft.com/en-us/azure/deployment-environments/tutorial-deploy-environments-in-cicd-github#61-create-the-dev-environment"
+echo "- [ ] add secrets AZURE_CLIENT_ID: $DEV_AZURE_CLIENT_ID"
+echo "- [ ] select main branch in 'Deployment branches and tags'"

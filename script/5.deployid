@@ -1,0 +1,59 @@
+#!/bin/bash
+set -eu
+
+## Deploy ID 作成
+echo "az ad app create --display-name \"$AZURE_PROJECT-Dev\""
+az ad app create --display-name "$AZURE_PROJECT-Dev"
+
+# Dev client id の取得
+echo "DEV_AZURE_CLIENT_ID=$(az ad app list --display-name "$AZURE_PROJECT-Dev" --query '[].appId' -o tsv)"
+DEV_AZURE_CLIENT_ID=$(az ad app list --display-name "$AZURE_PROJECT-Dev" --query '[].appId' -o tsv)
+
+# Dev client application id の取得
+echo "DEV_APPLICATION_ID=$(az ad app list --display-name "$AZURE_PROJECT-Dev" --query '[].id' -o tsv)"
+DEV_APPLICATION_ID=$(az ad app list --display-name "$AZURE_PROJECT-Dev" --query '[].id' -o tsv)
+
+# Create service principal
+echo "az ad sp create --id $DEV_AZURE_CLIENT_ID"
+az ad sp create --id $DEV_AZURE_CLIENT_ID
+
+# Dev service principal id の取得
+echo "DEV_SERVICE_PRINCIPAL_ID=$(az ad sp show --id $DEV_AZURE_CLIENT_ID --query 'id' -o tsv)"
+DEV_SERVICE_PRINCIPAL_ID=$(az ad sp show --id $DEV_AZURE_CLIENT_ID --query 'id' -o tsv)
+
+# federatedIdentityCredentials の作成
+echo "az rest --method POST --uri \"https://graph.microsoft.com/beta/applications/$DEV_APPLICATION_ID/federatedIdentityCredentials\" --body '{\"name\":\"ADEDev\",\"issuer\":\"https://token.actions.githubusercontent.com\",\"subject\":\"repo:koudaiii/my-devcenter:environment:Dev\",\"description\":\"Dev\",\"audiences\":[\"api://AzureADTokenExchange\"]}'"
+az rest --method POST --uri "https://graph.microsoft.com/beta/applications/$DEV_APPLICATION_ID/federatedIdentityCredentials" --body '{"name":"ADEDev","issuer":"https://token.actions.githubusercontent.com","subject":"repo:koudaiii/my-devcenter:environment:Dev","description":"Dev","audiences":["api://AzureADTokenExchange"]}'
+
+## 5.2
+echo "az role assignment create --scope \"$AZURE_PROJECT_ID\" --role Reader --assignee-object-id $DEV_SERVICE_PRINCIPAL_ID --assignee-principal-type ServicePrincipal"
+az role assignment create --scope "$AZURE_PROJECT_ID" --role Reader --assignee-object-id $DEV_SERVICE_PRINCIPAL_ID --assignee-principal-type ServicePrincipal
+
+echo "az role assignment create --scope \"$AZURE_PROJECT_ID/environmentTypes/Dev\" --role \"Deployment Environments User\" --assignee-object-id $DEV_SERVICE_PRINCIPAL_ID --assignee-principal-type ServicePrincipal"
+az role assignment create --scope "$AZURE_PROJECT_ID/environmentTypes/Dev" --role "Deployment Environments User" --assignee-object-id $DEV_SERVICE_PRINCIPAL_ID --assignee-principal-type ServicePrincipal
+
+echo "enviroment variable"
+echo "---------------------------------"
+echo "AZURE_RESOURCE_GROUP=$AZURE_RESOURCE_GROUP"
+echo "LOCATION=$LOCATION"
+echo "AZURE_DEVCENTER=$AZURE_DEVCENTER"
+echo "AZURE_PROJECT=$AZURE_PROJECT"
+echo "AZURE_KEYVAULT=$AZURE_KEYVAULT"
+echo "MY_AZURE_ID=$MY_AZURE_ID"
+echo "AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID"
+echo "AZURE_TENANT_ID=$AZURE_TENANT_ID"
+echo "AZURE_DEVCENTER_ID=$AZURE_DEVCENTER_ID"
+echo "AZURE_DEVCENTER_PRINCIPAL_ID=$AZURE_DEVCENTER_PRINCIPAL_ID"
+echo "AZURE_PROJECT_ID=$AZURE_PROJECT_ID"
+echo "AZURE_CATALOG=Environments"
+echo "AZURE_CATALOG_ITEM=FunctionApp"
+echo "AZURE_KEYVAULT_ID=$AZURE_KEYVAULT_ID"
+echo "GITHU_PERSONAL_ACCESS_TOKEN=$GITHU_PERSONAL_ACCESS_TOKEN"
+echo "DEV_AZURE_CLIENT_ID=$DEV_AZURE_CLIENT_ID"
+echo "DEV_APPLICATION_ID=$DEV_APPLICATION_ID"
+echo "DEV_SERVICE_PRINCIPAL_ID=$DEV_SERVICE_PRINCIPAL_ID"
+
+echo "6.Dev"
+echo "---------------------------------"
+echo "DEV_AZURE_CLIENT_ID=$DEV_AZURE_CLIENT_ID \
+  script/6.Dev"
