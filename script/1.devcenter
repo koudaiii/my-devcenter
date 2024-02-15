@@ -1,0 +1,109 @@
+#!/bin/bash
+# dev center を作成するスクリプト ref https://learn.microsoft.com/en-us/azure/deployment-environments/tutorial-deploy-environments-in-cicd-github
+# Role は、Subscritoin Owner になります。
+
+set -e
+
+az login
+
+# 環境変数の処理
+AZURE_RESOURCE_GROUP=${AZURE_RESOURCE_GROUP:-rg-devcenter-$(date +%Y%m%d%H%M%S)}
+LOCATION=${LOCATION:-japaneast}
+AZURE_DEVCENTER=${AZURE_DEVCENTER:-devcenter-$(date +%Y%m%d%H%M%S)}
+AZURE_PROJECT=${AZURE_PROJECT:-project-$(date +%Y%m%d%H%M%S)}
+AZURE_KEYVAULT=${AZURE_KEYVAULT:-keyvault-$(date +%Y%m%d%H%M%S)}
+AZURE_CATALOG=Environments
+AZURE_CATALOG_ITEM=FunctionApp
+
+# Azure Devcenter 拡張機能のインストール
+echo "az extension add --name devcenter --upgrade"
+az extension add --name devcenter --upgrade
+
+# Azure Devcenter プロバイダの登録
+echo "az provider register --namespace Microsoft.DevCenter"
+az provider register --namespace Microsoft.DevCenter
+
+# ユーザー ID
+echo "MY_AZURE_ID=$(az ad signed-in-user show --query id -o tsv)"
+MY_AZURE_ID=$(az ad signed-in-user show --query id -o tsv)
+
+# サブスクリプション ID
+echo "AZURE_SUBSCRIPTION_ID=$(az account show --query id --output tsv)"
+AZURE_SUBSCRIPTION_ID=$(az account show --query id --output tsv)
+
+# tenant ID
+echo "AZURE_TENANT_ID=$(az account show --query tenantId --output tsv)"
+AZURE_TENANT_ID=$(az account show --query tenantId --output tsv)
+
+# リソースグループの作成
+echo "az group create --name $AZURE_RESOURCE_GROUP --location $LOCATION"
+az group create --name $AZURE_RESOURCE_GROUP --location $LOCATION
+
+# devcenter の作成
+echo "az devcenter admin devcenter create --name $AZURE_DEVCENTER --identity-type SystemAssigned --resource-group $AZURE_RESOURCE_GROUP --location $LOCATION"
+az devcenter admin devcenter create --name $AZURE_DEVCENTER --identity-type SystemAssigned --resource-group $AZURE_RESOURCE_GROUP --location $LOCATION
+
+# devcenter id の取得
+echo "AZURE_DEVCENTER_ID=$(az devcenter admin devcenter show --name $AZURE_DEVCENTER --resource-group $AZURE_RESOURCE_GROUP --query id --output tsv)"
+AZURE_DEVCENTER_ID=$(az devcenter admin devcenter show --name $AZURE_DEVCENTER --resource-group $AZURE_RESOURCE_GROUP --query id --output tsv)
+
+# devcenter principal id の取得
+echo "AZURE_DEVCENTER_PRINCIPAL_ID=$(az devcenter admin devcenter show --name $AZURE_DEVCENTER --resource-group $AZURE_RESOURCE_GROUP --query 'identity.principalId' --output tsv)"
+AZURE_DEVCENTER_PRINCIPAL_ID=$(az devcenter admin devcenter show --name $AZURE_DEVCENTER --resource-group $AZURE_RESOURCE_GROUP --query 'identity.principalId' --output tsv)
+
+# subscription の owner に devcenter の principal id を追加
+echo "az role assignment create --scope /subscriptions/$AZURE_SUBSCRIPTION_ID --role Owner --assignee-object-id $AZURE_DEVCENTER_PRINCIPAL_ID --assignee-principal-type ServicePrincipal"
+az role assignment create --scope /subscriptions/$AZURE_SUBSCRIPTION_ID --role Owner --assignee-object-id $AZURE_DEVCENTER_PRINCIPAL_ID --assignee-principal-type ServicePrincipal
+
+# Dev 環境の作成
+echo "az devcenter admin environment-type create --name Dev --resource-group $AZURE_RESOURCE_GROUP --dev-center $AZURE_DEVCENTER"
+az devcenter admin environment-type create --name Dev --resource-group $AZURE_RESOURCE_GROUP --dev-center $AZURE_DEVCENTER
+
+# Project の作成
+echo "az devcenter admin project create --name $AZURE_PROJECT --resource-group $AZURE_RESOURCE_GROUP --location $LOCATION --dev-center-id $AZURE_DEVCENTER_ID"
+az devcenter admin project create --name $AZURE_PROJECT --resource-group $AZURE_RESOURCE_GROUP --location $LOCATION --dev-center-id $AZURE_DEVCENTER_ID
+
+# Project id の取得
+echo "AZURE_PROJECT_ID=$(az devcenter admin project show --name $AZURE_PROJECT --resource-group $AZURE_RESOURCE_GROUP --query id --output tsv)"
+AZURE_PROJECT_ID=$(az devcenter admin project show --name $AZURE_PROJECT --resource-group $AZURE_RESOURCE_GROUP --query id --output tsv)
+
+# Devcenter Project management role の割り当て
+echo "az role assignment create --scope "$AZURE_PROJECT_ID" --role "DevCenter Project Admin" --assignee-object-id $MY_AZURE_ID --assignee-principal-type User"
+az role assignment create --scope "$AZURE_PROJECT_ID" --role "DevCenter Project Admin" --assignee-object-id $MY_AZURE_ID --assignee-principal-type User
+
+# Project environment type の作成
+echo "az devcenter admin project-environment-type create --name Dev --roles \"{\"b24988ac-6180-42a0-ab88-20f7382dd24c\":{}}\" --deployment-target-id /subscriptions/$AZURE_SUBSCRIPTION_ID --resource-group $AZURE_RESOURCE_GROUP --location $LOCATION --project $AZURE_PROJECT --identity-type SystemAssigned --status Enabled"
+az devcenter admin project-environment-type create --name Dev --roles {"b24988ac-6180-42a0-ab88-20f7382dd24c":{}} --deployment-target-id /subscriptions/$AZURE_SUBSCRIPTION_ID --resource-group $AZURE_RESOURCE_GROUP --location $LOCATION --project $AZURE_PROJECT --identity-type SystemAssigned --status Enabled
+
+echo "enviroment variable"
+echo "---------------------------------"
+echo "AZURE_RESOURCE_GROUP=$AZURE_RESOURCE_GROUP"
+echo "LOCATION=$LOCATION"
+echo "AZURE_DEVCENTER=$AZURE_DEVCENTER"
+echo "AZURE_PROJECT=$AZURE_PROJECT"
+echo "AZURE_KEYVAULT=$AZURE_KEYVAULT"
+echo "MY_AZURE_ID=$MY_AZURE_ID"
+echo "AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID"
+echo "AZURE_TENANT_ID=$AZURE_TENANT_ID"
+echo "AZURE_DEVCENTER_ID=$AZURE_DEVCENTER_ID"
+echo "AZURE_DEVCENTER_PRINCIPAL_ID=$AZURE_DEVCENTER_PRINCIPAL_ID"
+echo "AZURE_PROJECT_ID=$AZURE_PROJECT_ID"
+echo "AZURE_CATALOG=Environments"
+echo "AZURE_CATALOG_ITEM=FunctionApp"
+
+echo "2.keyvault"
+echo "---------------------------------"
+echo "AZURE_RESOURCE_GROUP=$AZURE_RESOURCE_GROUP \
+  LOCATION=$LOCATION \
+  AZURE_DEVCENTER=$AZURE_DEVCENTER \
+  AZURE_PROJECT=$AZURE_PROJECT \
+  AZURE_KEYVAULT=$AZURE_KEYVAULT \
+  MY_AZURE_ID=$MY_AZURE_ID \
+  AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID \
+  AZURE_TENANT_ID=$AZURE_TENANT_ID \
+  AZURE_DEVCENTER_ID=$AZURE_DEVCENTER_ID \
+  AZURE_DEVCENTER_PRINCIPAL_ID=$AZURE_DEVCENTER_PRINCIPAL_ID \
+  AZURE_PROJECT_ID=$AZURE_PROJECT_ID \
+  AZURE_CATALOG=Environments \
+  AZURE_CATALOG_ITEM=FunctionApp \
+  script/2.keyvalut"

@@ -1,0 +1,48 @@
+#!/bin/bash
+set -eu
+
+## 4. Add catalog item in Devcenter
+echo "az devcenter admin catalog create --name Environments --resource-group $AZURE_RESOURCE_GROUP --dev-center $AZURE_DEVCENTER --git-hub path=\"/Environments\" branch=\"main\" secret-identifier=\"https://$AZURE_KEYVAULT.vault.azure.net/secrets/pat\" uri=\"https://github.com/koudaiii/my-devcenter.git\""
+az devcenter admin catalog create \
+  --name Environments \
+  --resource-group $AZURE_RESOURCE_GROUP \
+  --dev-center $AZURE_DEVCENTER \
+  --git-hub path="/Environments" branch="main" secret-identifier="https://$AZURE_KEYVAULT.vault.azure.net/secrets/pat" uri="https://github.com/koudaiii/my-devcenter.git"
+
+echo "enviroment variable"
+echo "---------------------------------"
+echo "AZURE_RESOURCE_GROUP=$AZURE_RESOURCE_GROUP"
+echo "LOCATION=$LOCATION"
+echo "AZURE_DEVCENTER=$AZURE_DEVCENTER"
+echo "AZURE_PROJECT=$AZURE_PROJECT"
+echo "AZURE_KEYVAULT=$AZURE_KEYVAULT"
+echo "MY_AZURE_ID=$MY_AZURE_ID"
+echo "AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID"
+echo "AZURE_TENANT_ID=$AZURE_TENANT_ID"
+echo "AZURE_DEVCENTER_ID=$AZURE_DEVCENTER_ID"
+echo "AZURE_DEVCENTER_PRINCIPAL_ID=$AZURE_DEVCENTER_PRINCIPAL_ID"
+echo "AZURE_PROJECT_ID=$AZURE_PROJECT_ID"
+echo "AZURE_CATALOG=Environments"
+echo "AZURE_CATALOG_ITEM=FunctionApp"
+echo "AZURE_KEYVAULT_ID=$AZURE_KEYVAULT_ID"
+echo "GITHU_PERSONAL_ACCESS_TOKEN=$GITHU_PERSONAL_ACCESS_TOKEN"
+
+
+echo "5.deployid"
+echo "---------------------------------"
+echo "AZURE_RESOURCE_GROUP=$AZURE_RESOURCE_GROUP \
+  LOCATION=$LOCATION \
+  AZURE_DEVCENTER=$AZURE_DEVCENTER \
+  AZURE_PROJECT=$AZURE_PROJECT \
+  AZURE_KEYVAULT=$AZURE_KEYVAULT \
+  MY_AZURE_ID=$MY_AZURE_ID \
+  AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID \
+  AZURE_TENANT_ID=$AZURE_TENANT_ID \
+  AZURE_DEVCENTER_ID=$AZURE_DEVCENTER_ID \
+  AZURE_DEVCENTER_PRINCIPAL_ID=$AZURE_DEVCENTER_PRINCIPAL_ID \
+  AZURE_PROJECT_ID=$AZURE_PROJECT_ID \
+  AZURE_CATALOG=Environments \
+  AZURE_CATALOG_ITEM=FunctionApp \
+  AZURE_KEYVAULT_ID=$AZURE_KEYVAULT_ID \
+  GITHU_PERSONAL_ACCESS_TOKEN=$GITHU_PERSONAL_ACCESS_TOKEN \
+  script/5.deployid"

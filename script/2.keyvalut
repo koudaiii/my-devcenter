@@ -1,0 +1,70 @@
+#!/bin/bash
+
+set -e
+
+# Keyvault の作成
+echo "az keyvault create --name $AZURE_KEYVAULT --resource-group $AZURE_RESOURCE_GROUP --location $LOCATION --enable-rbac-authorization true"
+az keyvault create --name $AZURE_KEYVAULT --resource-group $AZURE_RESOURCE_GROUP --location $LOCATION --enable-rbac-authorization true
+
+# Keyvault id の取得
+echo "AZURE_KEYVAULT_ID=$(az keyvault show --name $AZURE_KEYVAULT --resource-group $AZURE_RESOURCE_GROUP --query id --output tsv)"
+AZURE_KEYVAULT_ID=$(az keyvault show --name $AZURE_KEYVAULT --resource-group $AZURE_RESOURCE_GROUP --query id --output tsv)
+
+# Key Vault Administrator role の割り当て
+echo "az role assignment create --scope $AZURE_KEYVAULT_ID --role \"Key Vault Administrator\" --assignee-object-id $MY_AZURE_ID --assignee-principal-type User"
+az role assignment create --scope $AZURE_KEYVAULT_ID --role "Key Vault Administrator" --assignee-object-id $MY_AZURE_ID --assignee-principal-type User
+
+# Key Vault Secrets User role の割り当て
+echo "az role assignment create --scope $AZURE_KEYVAULT_ID --role \"Key Vault Secrets User\" --assignee-object-id $AZURE_DEVCENTER_PRINCIPAL_ID --assignee-principal-type ServicePrincipal"
+az role assignment create --scope $AZURE_KEYVAULT_ID --role "Key Vault Secrets User" --assignee-object-id $AZURE_DEVCENTER_PRINCIPAL_ID --assignee-principal-type ServicePrincipal
+
+echo "enviroment variable"
+echo "---------------------------------"
+echo "AZURE_RESOURCE_GROUP=$AZURE_RESOURCE_GROUP"
+echo "LOCATION=$LOCATION"
+echo "AZURE_DEVCENTER=$AZURE_DEVCENTER"
+echo "AZURE_PROJECT=$AZURE_PROJECT"
+echo "AZURE_KEYVAULT=$AZURE_KEYVAULT"
+echo "MY_AZURE_ID=$MY_AZURE_ID"
+echo "AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID"
+echo "AZURE_TENANT_ID=$AZURE_TENANT_ID"
+echo "AZURE_DEVCENTER_ID=$AZURE_DEVCENTER_ID"
+echo "AZURE_DEVCENTER_PRINCIPAL_ID=$AZURE_DEVCENTER_PRINCIPAL_ID"
+echo "AZURE_PROJECT_ID=$AZURE_PROJECT_ID"
+echo "AZURE_CATALOG=Environments"
+echo "AZURE_CATALOG_ITEM=FunctionApp"
+echo "AZURE_KEYVAULT_ID=$AZURE_KEYVAULT_ID"
+echo "GITHU_PERSONAL_ACCESS_TOKEN=$GITHU_PERSONAL_ACCESS_TOKEN"
+
+echo "pre-requierment"
+echo "---------------------------------"
+echo "https://learn.microsoft.com/en-us/azure/deployment-environments/tutorial-deploy-environments-in-cicd-github#3-create-and-configure-a-github-repository"
+
+echo "- [ ] create repository from template. template https://github.com/Azure-Samples/deployment-environments-cicd-tutorial"
+echo "- [ ] add variables"
+echo "  - [ ] AZURE_CATALOG: Environments"
+echo "  - [ ] AZURE_CATALOG_ITEM: FunctionApp"
+echo "  - [ ] AZURE_DEVCENTER: $AZURE_DEVCENTER"
+echo "  - [ ] AZURE_PROJECT: $AZURE_PROJECT"
+echo "  - [ ] AZURE_SUBSCRIPTION_ID: $AZURE_SUBSCRIPTION_ID"
+echo "  - [ ] AZURE_TENANT_ID: $AZURE_TENANT_ID"
+echo "- [ ] create personal access token from https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#fine-grained-personal-access-tokens"
+
+echo "3.github"
+echo "---------------------------------"
+echo "AZURE_RESOURCE_GROUP=$AZURE_RESOURCE_GROUP \
+  LOCATION=$LOCATION \
+  AZURE_DEVCENTER=$AZURE_DEVCENTER \
+  AZURE_PROJECT=$AZURE_PROJECT \
+  AZURE_KEYVAULT=$AZURE_KEYVAULT \
+  MY_AZURE_ID=$MY_AZURE_ID \
+  AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID \
+  AZURE_TENANT_ID=$AZURE_TENANT_ID \
+  AZURE_DEVCENTER_ID=$AZURE_DEVCENTER_ID \
+  AZURE_DEVCENTER_PRINCIPAL_ID=$AZURE_DEVCENTER_PRINCIPAL_ID \
+  AZURE_PROJECT_ID=$AZURE_PROJECT_ID \
+  AZURE_CATALOG=Environments \
+  AZURE_CATALOG_ITEM=FunctionApp \
+  AZURE_KEYVAULT_ID=$AZURE_KEYVAULT_ID \
+  GITHU_PERSONAL_ACCESS_TOKEN=$GITHU_PERSONAL_ACCESS_TOKEN \
+  script/3.github"

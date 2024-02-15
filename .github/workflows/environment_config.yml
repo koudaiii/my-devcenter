@@ -16,15 +16,15 @@ on:
         value: ${{ jobs.env_config.outputs.type }}
 
 env:
-  # format: ci-[branch|pr]-[branch name|pr number]-suffix
-  ENVIRONMENT_NAME: ci-${{ github.event_name == 'pull_request' && 'pr' || 'branch' }}-${{ github.event_name == 'pull_request' && github.event.number || github.event_name == 'push' && github.ref_name || github.event.ref }}-${{ github.event.repository.id }}
+  # format: ci-[branch|pr]-[commit SHA][0:8]
+  ENVIRONMENT_NAME: ci-${{ github.event_name == 'pull_request' && 'pr' || 'branch' }}-${{ github.sha }}[0:8]
 
   # branch/Pull request | Environment Type
   # --------------------------------------
   # feature branches    | Dev
   # PR feature -> main  | Test
   # main branch         | Prod
-  ENVIRONMENT_TYPE: 'Dev' # ${{ github.event_name == 'push' && (github.event.ref == 'refs/heads/main' && 'Prod' || 'Dev') || github.event_name == 'pull_request' && (github.event.pull_request.base.ref == 'main' && 'Test') || 'Dev' }}
+  ENVIRONMENT_TYPE: 'Dev'
 
 jobs:
   env_config:
