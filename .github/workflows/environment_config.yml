@@ -16,8 +16,8 @@ on:
         value: ${{ jobs.env_config.outputs.type }}
 
 env:
-  # format: ci-[branch|pr]-[commit SHA][0:8]
-  ENVIRONMENT_NAME: ci-${{ github.event_name == 'pull_request' && 'pr' || 'branch' }}-${{ github.sha }}[0:8]
+  # format: ci-[branch|pr]-[commit SHA]
+  ENVIRONMENT_NAME: ci-${{ github.event_name == 'pull_request' && 'pr' || 'branch' }}-${{ github.sha }}
 
   # branch/Pull request | Environment Type
   # --------------------------------------
