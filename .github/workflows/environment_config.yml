@@ -72,5 +72,5 @@ jobs:
       - id: get_config
         name: Set Outputs
         run: |
-          echo "name=${{ env.ENVIRONMENT_NAME//\//- }}" >> $GITHUB_OUTPUT
+          echo "name=$ENVIRONMENT_NAME" | sed 's/\//-/g' >> $GITHUB_OUTPUT
           echo "type=$ENVIRONMENT_TYPE" >> $GITHUB_OUTPUT
