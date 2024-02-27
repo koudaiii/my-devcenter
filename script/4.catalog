@@ -1,8 +1,9 @@
 #!/bin/bash
 set -eu
 
-## 4. Add catalog item in Devcenter
+echo "# 4. Add catalog item in Devcenter"
 echo "az devcenter admin catalog create --name Environments --resource-group $AZURE_RESOURCE_GROUP --dev-center $AZURE_DEVCENTER --git-hub path=\"/Environments\" branch=\"main\" secret-identifier=\"https://$AZURE_KEYVAULT.vault.azure.net/secrets/pat\" uri=\"https://github.com/koudaiii/my-devcenter.git\""
+echo "---------------------------------"
 az devcenter admin catalog create \
   --name Environments \
   --resource-group $AZURE_RESOURCE_GROUP \

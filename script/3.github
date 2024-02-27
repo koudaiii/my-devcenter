@@ -11,8 +11,10 @@ echo "AZURE_SUBSCRIPTION_ID=$AZURE_SUBSCRIPTION_ID"
 echo "AZURE_TENANT_ID=$AZURE_TENANT_ID"
 echo "---------------------------------"
 
-echo "az keyvault secret set --name pat --vault-name $AZURE_KEYVAULT --value $GITHU_PERSONAL_ACCESS_TOKEN>"
-az keyvault secret set --name pat --vault-name $AZURE_KEYVAULT --value $GITHU_PERSONAL_ACCESS_TOKEN
+echo "# 3.1 Key Valut に GitHubpersonal access token を設定"
+echo "az keyvault secret set --name pat --vault-name $AZURE_KEYVAULT --value $GITHUB_PERSONAL_ACCESS_TOKEN"
+echo "---------------------------------"
+az keyvault secret set --name pat --vault-name $AZURE_KEYVAULT --value $GITHUB_PERSONAL_ACCESS_TOKEN
 
 echo "enviroment variable"
 echo "---------------------------------"
@@ -30,7 +32,7 @@ echo "AZURE_PROJECT_ID=$AZURE_PROJECT_ID"
 echo "AZURE_CATALOG=Environments"
 echo "AZURE_CATALOG_ITEM=FunctionApp"
 echo "AZURE_KEYVAULT_ID=$AZURE_KEYVAULT_ID"
-echo "GITHU_PERSONAL_ACCESS_TOKEN=$GITHU_PERSONAL_ACCESS_TOKEN"
+echo "GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_PERSONAL_ACCESS_TOKEN"
 
 
 echo "4.catalog"
@@ -49,5 +51,5 @@ echo "AZURE_RESOURCE_GROUP=$AZURE_RESOURCE_GROUP \
   AZURE_CATALOG=Environments \
   AZURE_CATALOG_ITEM=FunctionApp \
   AZURE_KEYVAULT_ID=$AZURE_KEYVAULT_ID \
-  GITHU_PERSONAL_ACCESS_TOKEN=$GITHU_PERSONAL_ACCESS_TOKEN \
+  GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_PERSONAL_ACCESS_TOKEN \
   script/4.catalog"
