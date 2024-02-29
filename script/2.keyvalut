@@ -2,20 +2,24 @@
 
 set -e
 
-# Keyvault の作成
+echo "# Keyvault の作成"
 echo "az keyvault create --name $AZURE_KEYVAULT --resource-group $AZURE_RESOURCE_GROUP --location $LOCATION --enable-rbac-authorization true"
+echo "---------------------------------"
 az keyvault create --name $AZURE_KEYVAULT --resource-group $AZURE_RESOURCE_GROUP --location $LOCATION --enable-rbac-authorization true
 
-# Keyvault id の取得
+echo "# Keyvault id の取得"
 echo "AZURE_KEYVAULT_ID=$(az keyvault show --name $AZURE_KEYVAULT --resource-group $AZURE_RESOURCE_GROUP --query id --output tsv)"
+echo "---------------------------------"
 AZURE_KEYVAULT_ID=$(az keyvault show --name $AZURE_KEYVAULT --resource-group $AZURE_RESOURCE_GROUP --query id --output tsv)
 
-# Key Vault Administrator role の割り当て
+echo "# Key Vault Administrator role の割り当て"
 echo "az role assignment create --scope $AZURE_KEYVAULT_ID --role \"Key Vault Administrator\" --assignee-object-id $MY_AZURE_ID --assignee-principal-type User"
+echo "---------------------------------"
 az role assignment create --scope $AZURE_KEYVAULT_ID --role "Key Vault Administrator" --assignee-object-id $MY_AZURE_ID --assignee-principal-type User
 
-# Key Vault Secrets User role の割り当て
+echo "# Key Vault Secrets User role の割り当て"
 echo "az role assignment create --scope $AZURE_KEYVAULT_ID --role \"Key Vault Secrets User\" --assignee-object-id $AZURE_DEVCENTER_PRINCIPAL_ID --assignee-principal-type ServicePrincipal"
+echo "---------------------------------"
 az role assignment create --scope $AZURE_KEYVAULT_ID --role "Key Vault Secrets User" --assignee-object-id $AZURE_DEVCENTER_PRINCIPAL_ID --assignee-principal-type ServicePrincipal
 
 echo "enviroment variable"
@@ -34,7 +38,7 @@ echo "AZURE_PROJECT_ID=$AZURE_PROJECT_ID"
 echo "AZURE_CATALOG=Environments"
 echo "AZURE_CATALOG_ITEM=FunctionApp"
 echo "AZURE_KEYVAULT_ID=$AZURE_KEYVAULT_ID"
-echo "GITHU_PERSONAL_ACCESS_TOKEN=$GITHU_PERSONAL_ACCESS_TOKEN"
+echo "GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_PERSONAL_ACCESS_TOKEN"
 
 echo "pre-requierment"
 echo "---------------------------------"
@@ -66,5 +70,5 @@ echo "AZURE_RESOURCE_GROUP=$AZURE_RESOURCE_GROUP \
   AZURE_CATALOG=Environments \
   AZURE_CATALOG_ITEM=FunctionApp \
   AZURE_KEYVAULT_ID=$AZURE_KEYVAULT_ID \
-  GITHU_PERSONAL_ACCESS_TOKEN=$GITHU_PERSONAL_ACCESS_TOKEN \
+  GITHUB_PERSONAL_ACCESS_TOKEN=$GITHUB_PERSONAL_ACCESS_TOKEN \
   script/3.github"
